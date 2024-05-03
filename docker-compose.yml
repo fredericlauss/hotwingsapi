@@ -14,8 +14,11 @@ services:
     container_name: mongo
     image: mongo
     restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - ./data:/data/db
-    command: mongod --quiet --logpath /dev/null 
+    # ports:
+    #   - "27017:27017"
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${userAdmin}
+      - MONGO_INITDB_ROOT_PASSWORD=${userPassword}
+    # volumes:
+    #   - ./data:/data/db
+    # command: mongod --quiet --logpath /dev/null 
