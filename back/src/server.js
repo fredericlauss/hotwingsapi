@@ -4,6 +4,7 @@ import mongoose from 'mongoose';
 import recipe from './routes/recipe.routes.js';
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
+import scrapeRoutes from './routes/scraper.routes.js';
 
 const fastify = Fastify({
   logger: true
@@ -37,6 +38,7 @@ try {
 }
 
 fastify.register(recipe);
+fastify.register(scrapeRoutes);
 
 
 
