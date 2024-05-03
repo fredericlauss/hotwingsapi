@@ -1,6 +1,7 @@
 import xpath from 'xpath-html';
 import fs from 'fs';
-import fetch from 'node-fetch'
+import fetch from 'node-fetch';
+import Recipe from '../models/recipe.model.js';
 
 async function scrapeUrl(req, reply) {
   const url = "https://www.allrecipes.com/recipes/17561/lunch/";
@@ -78,5 +79,17 @@ async function scrapeUrl(req, reply) {
     }
 }
 
+async function populate(req, reply) {
+  try {
+    const recipesData = fs.readFileSync('data.json', 'utf8');
+    const recipes = JSON.parse(recipesData);
+    await Recipe.insertMany(recipes);
+    reply.send('Base de données peuplée avec succès !');
+  } catch (error) {
+    console.error('Erreur lors du peuplement de la base de données :', error);
+    reply.status(500).send('Une erreur est survenue lors du peuplement de la base de données');
+  }
+};
 
-  export { scrapeUrl, read };
+
+  export { scrapeUrl, read, populate };
