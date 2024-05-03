@@ -4,7 +4,6 @@ import fetch from 'node-fetch'
 
 async function scrapeUrl(req, reply) {
   const url = "https://www.allrecipes.com/recipes/17561/lunch/";
-
   try {
     const response = await fetch(url);
     const body = await response.text();
@@ -16,22 +15,20 @@ async function scrapeUrl(req, reply) {
       recipeUrls.push(link.getAttribute('href'));
     });
 
-    const allRecipesDetails = [];
-    for (const recipeUrl of recipeUrls) {
-        const recipeDetails = await scrapeRecipeDetails(recipeUrl);
-        allRecipesDetails.push(recipeDetails);
-      }
-  
-    //   fs.writeFile('all_recipes_details.json', JSON.stringify(allRecipesDetails), (err) => {
-    //     if (err)
-    //       console.error("Erreur lors de l'écriture du fichier :", err);
-    //     else
-    //       console.log("Détails de toutes les recettes extraits et écrits dans le fichier 'all_recipes_details.json'.");
-    //   });
+      const tasks = [];
+      for (const link of recipeUrls)
+          tasks.push(scrapeRecipeDetails(link));
+      const scrappedPages = await Promise.all(tasks);
 
-      console.log(JSON.stringify(allRecipesDetails));
-  
-      reply.send({ url });
+      fs.writeFile('data.json', JSON.stringify(scrappedPages), (err) => {
+        if (err) {
+            console.error("Erreur lors de l'écriture du fichier :", err);
+            reply.status(500).send({ error: "Une erreur s'est produite lors de l'écriture des données dans le fichier JSON." });
+        } else {
+            console.log("Données scrapées écrites dans le fichier 'data.json'.");
+            reply.send({ url });
+        }
+    });
     } catch (error) {
       console.error('Error while scraping:', error);
       reply.status(500).send({ error: 'An error occurred while scraping the URL' });
@@ -70,4 +67,16 @@ async function scrapeUrl(req, reply) {
     }
   }
   
-  export default scrapeUrl;
+  async function read(req, reply) {
+    try {
+        const jsonData = fs.readFileSync('data.json', 'utf8');
+        const data = JSON.parse(jsonData);
+        reply.send(data);
+    } catch (error) {
+        console.error('An error occurred while reading JSON:', error);
+        reply.status(500).send({ error: 'An error occurred while reading JSON' });
+    }
+}
+
+
+  export { scrapeUrl, read };
