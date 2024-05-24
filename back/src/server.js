@@ -18,7 +18,7 @@ const swaggerOptions = {
           description: "dual DB API",
           version: "1.0.0",
       },
-      host: "localhost:5000",
+      host: process.env.BASE_URL,
   },
 };
 
