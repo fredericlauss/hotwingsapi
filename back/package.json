@@ -16,11 +16,11 @@
     "@fastify/mongodb": "^8.0.0",
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^3.0.0",
+    "cheerio": "^1.0.0-rc.12",
     "fastify": "^4.26.2",
     "fastify-cli": "^6.1.1",
     "fs": "^0.0.1-security",
     "mongoose": "^8.3.3",
-    "node-fetch": "^3.3.2",
-    "xpath-html": "^1.0.3"
+    "node-fetch": "^3.3.2"
   }
 }

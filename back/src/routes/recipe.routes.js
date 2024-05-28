@@ -19,6 +19,7 @@ import getRecipes from '../controllers/recipe.controller.js'
           },
         },
       },
+      tags: ['Recipe']
     },
     handler: getRecipes,
   }

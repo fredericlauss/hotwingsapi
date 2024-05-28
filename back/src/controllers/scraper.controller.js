@@ -1,4 +1,4 @@
-import xpath from 'xpath-html';
+import * as cheerio from 'cheerio';
 import fs from 'fs';
 import fetch from 'node-fetch';
 import Recipe from '../models/recipe.model.js';
@@ -8,14 +8,12 @@ async function scrapeUrl(req, reply) {
   try {
     const response = await fetch(url);
     const body = await response.text();
-    const document = xpath.fromPageSource(body);
+    const $ = cheerio.load(body);
 
     const recipeUrls = [];
-    const recipeLinks = document.findElements("//a[contains(@class, 'mntl-card-list-items')][starts-with(@href, 'https://www.allrecipes.com/recipe/')]");
-    recipeLinks.forEach(link => {
-      recipeUrls.push(link.getAttribute('href'));
+    $('a.mntl-card-list-items[href^="https://www.allrecipes.com/recipe/"]').each((index, element) => {
+      recipeUrls.push($(element).attr('href'));
     });
-
       const tasks = [];
       for (const link of recipeUrls)
           tasks.push(scrapeRecipeDetails(link));
@@ -40,26 +38,29 @@ async function scrapeUrl(req, reply) {
     try {
       const response = await fetch(recipeUrl);
       const body = await response.text();
-      const document = xpath.fromPageSource(body);
+      const $ = cheerio.load(body);
   
-      // Titre de la recette
-      const titleElement = document.findElement("//h1");
-      const title = titleElement ? titleElement.getText().trim() : "Titre non trouvé";
+    // Titre de la recette
+    const title = $('h1').text().trim() || "Titre non trouvé";
+    
+    // Ingrédients
+    const ingredients = [];
+    $('span[data-ingredient-name="true"]').each((index, element) => {
+      ingredients.push($(element).text().trim());
+    });
       
-      const ingredientsElements = document.findElements("//span[@data-ingredient-name='true']");
-      const ingredients = ingredientsElements.map(ingredientElement => ingredientElement.getText().trim());
       
-      
-      // Étapes de préparation de la recette
-      const stepsElements = document.findElements("//div[contains(@class, 'recipe__steps-content')]//ol//li//p");
-      const preparationSteps = stepsElements.map(stepElement => stepElement.getText().trim());
+    // Étapes de préparation
+    const preparationSteps = [];
+    $('div.recipe__steps-content ol li p').each((index, element) => {
+      preparationSteps.push($(element).text().trim());
+    });
 
-      
-      const recipeDetails = {
-        title,
-        ingredients,
-        preparationSteps
-      };
+    const recipeDetails = {
+      title,
+      ingredients,
+      preparationSteps
+    };
   
       return recipeDetails;
     } catch (error) {
