@@ -5,6 +5,7 @@ import recipe from './routes/recipe.routes.js';
 import fastifySwagger from "@fastify/swagger";
 import fastifySwaggerUi from "@fastify/swagger-ui";
 import scrapeRoutes from './routes/scraper.routes.js';
+import authRoutes from './routes/auth.routes.js';
 
 const fastify = Fastify({
   logger: true
@@ -21,7 +22,8 @@ const swaggerOptions = {
       host: process.env.BASE_URL,
       tags: [
         { name: 'Recipes', description: 'Recipes related endpoints' },
-        { name: 'Data', description: 'Web scraping related endpoints' }
+        { name: 'Data', description: 'Web scraping related endpoints' },
+        { name: 'Auth', description: 'A/B testing related endpoints' }
       ],
   },
 };
@@ -43,6 +45,7 @@ try {
 
 fastify.register(recipe);
 fastify.register(scrapeRoutes);
+fastify.register(authRoutes);
 
 
 
