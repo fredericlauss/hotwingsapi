@@ -1,4 +1,4 @@
-const getAuth = (req, reply, fastify) => {
+async function getAuth(req, reply, fastify) {
 
     let dbToken = req.cookies['dbToken'];
     console.log("req.query", req.query)

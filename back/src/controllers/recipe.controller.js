@@ -1,6 +1,7 @@
 import Recipe from '../models/recipe.model.js';
 
-const getRecipes = async (req, reply) => {
+
+async function getRecipes(req, reply, fastify) {
   const dbToken = req.query.db;
 
   if (dbToken === 'sql') {
