@@ -15,10 +15,14 @@ const swaggerOptions = {
   swagger: {
       info: {
           title: "Hotwings API",
-          description: "dual DB API",
+          description: "Hotwings API",
           version: "1.0.0",
       },
       host: process.env.BASE_URL,
+      tags: [
+        { name: 'Recipes', description: 'Recipes related endpoints' },
+        { name: 'Data', description: 'Web scraping related endpoints' }
+      ],
   },
 };
 

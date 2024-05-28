@@ -2,6 +2,7 @@ import { scrapeUrl, read, populate } from '../controllers/scraper.controller.js'
 
 const scrapeUrlOpts = {
     schema: {
+      tags: ['Data'],
       querystring: {
         url: { type: 'string' }
       },
@@ -19,6 +20,7 @@ const scrapeUrlOpts = {
 
   const readOpts = {
     schema: {
+      tags: ['Data'],
         response: {
             200: {
                 type: 'array',
@@ -44,6 +46,7 @@ const scrapeUrlOpts = {
 
 const populateOpts = {
   schema: {
+    tags: ['Data'],
     querystring: {
       url: { type: 'string' }
     },
@@ -62,8 +65,8 @@ const populateOpts = {
   // Définir la route
   function scrapeRoutes(fastify, options, done) {
     fastify.get('/scrape', scrapeUrlOpts);
-    fastify.get('/read', readOpts);
-    fastify.get('/populate', populateOpts);
+    fastify.get('/readjson', readOpts);
+    fastify.get('/populatemongodb', populateOpts);
     done();
   }
   

@@ -11,6 +11,7 @@ import getRecipes from '../controllers/recipe.controller.js'
   // Options for get all recipe
   const getRecipesOpts = {
     schema: {
+      tags: ['Recipes'],
       response: {
         200: {
           type: 'object',
@@ -19,7 +20,6 @@ import getRecipes from '../controllers/recipe.controller.js'
           },
         },
       },
-      tags: ['Recipe']
     },
     handler: getRecipes,
   }
