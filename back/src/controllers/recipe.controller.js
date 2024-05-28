@@ -16,5 +16,24 @@ async function getRecipes(req, reply, fastify) {
     }
   }
 }
+async function getRecipeById(req, reply, fastify) {
+  const dbToken = req.query.db;
 
-export default getRecipes;
+  if (dbToken === 'sql') {
+    reply.send({ message: 'Using SQL database. Implement SQL database logic here.' });
+  } else {
+    try {
+      const recipe = await Recipe.findById(req.params.id).exec();
+      if (!recipe) {
+        reply.status(404).send({ message: 'Recipe not found' });
+        return;
+      }
+      reply.send(recipe.toObject());
+    } catch (error) {
+      reply.status(500).send({ error: 'An error occurred while fetching the recipe.' });
+    }
+  }
+}
+
+
+export {getRecipes, getRecipeById};
