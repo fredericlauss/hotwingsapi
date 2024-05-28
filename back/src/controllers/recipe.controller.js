@@ -9,8 +9,7 @@ async function getRecipes(req, reply, fastify) {
   } else {
     try {
       const recipes = await Recipe.find().exec();
-      const plainRecipes = recipes.map(recipe => recipe.toObject());
-      reply.send({ recipes: plainRecipes });
+      reply.send({ recipes });
     } catch (error) {
       reply.status(500).send({ error: 'An error occurred while fetching recipes.' });
     }
@@ -35,5 +34,37 @@ async function getRecipeById(req, reply, fastify) {
   }
 }
 
+async function searchRecipesByTitle(req, reply) {
+  const dbToken = req.query.db;
 
-export {getRecipes, getRecipeById};
+  if (dbToken === 'sql') {
+    reply.send({ message: 'Using SQL database. Implement SQL database logic here.' });
+  } else {
+    try {
+      const { name } = req.query;
+      const recipes = await Recipe.find({ title: { $regex: name, $options: 'i' } }).exec();
+      reply.send({ recipes });
+    } catch (error) {
+      reply.status(500).send({ error: 'An error occurred while searching for recipes.' });
+    }
+  }
+}
+
+async function searchRecipesByIngredient(req, reply) {
+  const dbToken = req.query.db;
+
+  if (dbToken === 'sql') {
+    reply.send({ message: 'Using SQL database. Implement SQL database logic here.' });
+  } else {
+    try {
+      const { ingredient } = req.query;
+      const recipes = await Recipe.find({ ingredients: { $regex: ingredient, $options: 'i' } }).exec();
+      reply.send({ recipes });
+    } catch (error) {
+      reply.status(500).send({ error: 'An error occurred while searching for recipes.' });
+    }
+  }
+}
+
+
+export {getRecipes, getRecipeById, searchRecipesByTitle, searchRecipesByIngredient};

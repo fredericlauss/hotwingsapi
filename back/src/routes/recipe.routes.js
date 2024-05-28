@@ -1,4 +1,4 @@
-import {getRecipes, getRecipeById} from '../controllers/recipe.controller.js';
+import {getRecipes, getRecipeById, searchRecipesByTitle, searchRecipesByIngredient} from '../controllers/recipe.controller.js';
 import fastifyCookie from 'fastify-cookie';
 
 const RecipeSchema = {
@@ -68,10 +68,58 @@ const getRecipeByIdOpts = {
   handler: getRecipeById,
 };
 
+const searchRecipesByTitleOpts = {
+  schema: {
+    tags: ['Recipes'],
+    querystring: {
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        db: { type: 'string', enum: ['mongo', 'sql'] }
+      },
+      required: ['name']
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          recipes: { type: 'array', items: RecipeSchema },
+        },
+      },
+    },
+  },
+  handler: searchRecipesByTitle,
+};
+
+const searchRecipesByIngredientOpts = {
+  schema: {
+    tags: ['Recipes'],
+    querystring: {
+      type: 'object',
+      properties: {
+        ingredient: { type: 'string' },
+        db: { type: 'string', enum: ['mongo', 'sql'] }
+      },
+      required: ['ingredient']
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          recipes: { type: 'array', items: RecipeSchema },
+        },
+      },
+    },
+  },
+  handler: searchRecipesByIngredient,
+};
+
 function recipeRoutes(fastify, options, done) {
   fastify.register(fastifyCookie);
   fastify.get('/recipes', getRecipesOpts);
   fastify.get('/recipes/:id', getRecipeByIdOpts);
+  fastify.get('/recipes/searchByTitle', searchRecipesByTitleOpts);
+  fastify.get('/recipes/searchByIngredient', searchRecipesByIngredientOpts);
   done()
 }
 
