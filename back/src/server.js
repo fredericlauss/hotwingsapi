@@ -37,7 +37,7 @@ fastify.register(fastifySwagger, swaggerOptions);
 fastify.register(fastifySwaggerUi, swaggerUiOptions);
 
 try {
-  mongoose.connect('mongodb://userAdmin:userPassword@mongo');
+  mongoose.connect(process.env.MONGO_URI);
   console.log('Connexion à la base de données MongoDB réussie');
 } catch (e) {
   console.error(e);
