@@ -1,10 +1,60 @@
 import Recipe from '../models/recipe.model.js';
+import { createClient } from '@supabase/supabase-js';
 
 async function getRecipes(req, reply, fastify) {
   const dbToken = req.query.db;
 
   if (dbToken === 'sql') {
-    reply.send({ message: 'Using SQL database. Implement SQL database logic here.' });
+    const supabase = createClient(process.env.SUPABASEURL, process.env.SUPABASEKEY);
+
+    try {
+      // Fetch all recipes
+      const { data: recipes, error: recipesError } = await supabase.from('recipes').select('*');
+
+      if (recipesError) {
+        throw recipesError;
+      }
+
+      // Fetch all ingredients
+      const { data: ingredients, error: ingredientsError } = await supabase
+        .from('ingredients')
+        .select('*');
+
+      if (ingredientsError) {
+        throw ingredientsError;
+      }
+
+      // Fetch all preparation steps
+      const { data: preparationSteps, error: preparationStepsError } = await supabase
+        .from('reparation_steps')
+        .select('*');
+
+      if (preparationStepsError) {
+        throw preparationStepsError;
+      }
+
+      // Combine recipes with their ingredients and preparation steps
+      const combinedRecipes = recipes.map((recipe) => {
+        const recipeIngredients = ingredients
+          .filter((ingredient) => ingredient.recipe_id === recipe.id)
+          .map((ingredient) => ({ name: ingredient.name })); // Mapping to ensure objects are correct
+        const recipePreparationSteps = preparationSteps
+          .filter((step) => step.recipe_id === recipe.id)
+          .sort((a, b) => a.step_number - b.step_number)
+          .map((step) => ({ step_number: step.step_number, description: step.description })); // Mapping to ensure objects are correct
+
+        return {
+          ...recipe,
+          ingredients: recipeIngredients,
+          preparationSteps: recipePreparationSteps,
+        };
+      });
+
+      reply.send({ recipes: combinedRecipes });
+    } catch (error) {
+      console.error('An error occurred while fetching recipes:', error);
+      reply.status(500).send({ error: 'An error occurred while fetching recipes.' });
+    }
   } else {
     try {
       const recipes = await Recipe.find().exec();
@@ -14,6 +64,7 @@ async function getRecipes(req, reply, fastify) {
     }
   }
 }
+
 async function getRecipeById(req, reply, fastify) {
   const dbToken = req.query.db;
 
