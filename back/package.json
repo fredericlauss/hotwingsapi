@@ -16,6 +16,7 @@
     "@fastify/mongodb": "^8.0.0",
     "@fastify/swagger": "^8.14.0",
     "@fastify/swagger-ui": "^3.0.0",
+    "@supabase/supabase-js": "^2.43.4",
     "cheerio": "^1.0.0-rc.12",
     "fastify": "^4.26.2",
     "fastify-cli": "^6.1.1",

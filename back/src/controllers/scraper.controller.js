@@ -2,6 +2,7 @@ import * as cheerio from 'cheerio';
 import fs from 'fs';
 import fetch from 'node-fetch';
 import Recipe from '../models/recipe.model.js';
+import { createClient } from '@supabase/supabase-js';
 
 async function scrapeUrl(req, reply) {
   const url = 'https://www.allrecipes.com/recipes/17561/lunch/';
@@ -23,11 +24,9 @@ async function scrapeUrl(req, reply) {
     fs.writeFile('data.json', JSON.stringify(scrappedPages), (err) => {
       if (err) {
         console.error("Erreur lors de l'écriture du fichier :", err);
-        reply
-          .status(500)
-          .send({
-            error: "Une erreur s'est produite lors de l'écriture des données dans le fichier JSON.",
-          });
+        reply.status(500).send({
+          error: "Une erreur s'est produite lors de l'écriture des données dans le fichier JSON.",
+        });
       } else {
         console.log("Données scrapées écrites dans le fichier 'data.json'.");
         reply.send({ url });
@@ -96,4 +95,77 @@ async function populate(req, reply) {
   }
 }
 
-export { scrapeUrl, read, populate };
+async function populateSupabase(req, reply) {
+  const supabase = createClient(process.env.SUPABASEURL, process.env.SUPABASEKEY);
+
+  try {
+    const recipesData = fs.readFileSync('data.json', 'utf8');
+    const data = JSON.parse(recipesData);
+
+    const insertPromises = data.map(async (recipe) => {
+      const { title, ingredients, preparationSteps } = recipe;
+      console.log('title', title, 'ingredients', ingredients, 'preparationSteps', preparationSteps);
+      if (!title || !ingredients || !preparationSteps) {
+        console.error('Invalid recipe structure', recipe);
+        return;
+      }
+
+      try {
+        const { data: recipeData, error: recipeError } = await supabase
+          .from('recipes')
+          .insert({ title })
+          .select();
+
+        if (recipeError) {
+          console.error('Error inserting recipe:', recipeError);
+          return;
+        }
+
+        const recipeId = recipeData[0].id;
+
+        const ingredientsData = ingredients.map((name) => ({ recipe_id: recipeId, name }));
+        const { error: ingredientsError } = await supabase
+          .from('ingredients')
+          .insert(ingredientsData);
+
+        if (ingredientsError) {
+          console.error('Error inserting ingredients:', ingredientsError);
+          return;
+        }
+
+        const preparationStepsData = preparationSteps.map((description, index) => ({
+          recipe_id: recipeId,
+          step_number: index + 1,
+          description,
+        }));
+
+        const { error: stepsError } = await supabase
+          .from('reparation_steps')
+          .insert(preparationStepsData);
+
+        if (stepsError) {
+          console.error(
+            'Error inserting preparation steps:',
+            stepsError,
+            'from',
+            preparationStepsData
+          );
+          return;
+        }
+
+        console.log(`Successfully inserted recipe ${recipe.title}`);
+      } catch (err) {
+        console.error('Unexpected error:', err);
+      }
+    });
+
+    await Promise.all(insertPromises);
+
+    reply.send('Base de données Supabase peuplée avec succès !');
+  } catch (error) {
+    console.error('Erreur lors du peuplement de la base de données :', error);
+    reply.status(500).send('Erreur lors du peuplement de la base de données :', error);
+  }
+}
+
+export { scrapeUrl, read, populate, populateSupabase };

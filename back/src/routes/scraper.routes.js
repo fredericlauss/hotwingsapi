@@ -1,4 +1,4 @@
-import { scrapeUrl, read, populate } from '../controllers/scraper.controller.js';
+import { scrapeUrl, read, populate, populateSupabase } from '../controllers/scraper.controller.js';
 
 const scrapeUrlOpts = {
   schema: {
@@ -62,11 +62,30 @@ const populateOpts = {
   handler: populate,
 };
 
+const populateSupabaseOpts = {
+  schema: {
+    tags: ['Data'],
+    querystring: {
+      url: { type: 'string' },
+    },
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: populateSupabase,
+};
+
 // Définir la route
 function scrapeRoutes(fastify, options, done) {
   fastify.get('/scrape', scrapeUrlOpts);
   fastify.get('/readjson', readOpts);
   fastify.get('/populatemongodb', populateOpts);
+  fastify.get('/populatesupabase', populateSupabaseOpts);
   done();
 }
 
