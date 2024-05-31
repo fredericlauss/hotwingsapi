@@ -1,4 +1,9 @@
-import {getRecipes, getRecipeById, searchRecipesByTitle, searchRecipesByIngredient} from '../controllers/recipe.controller.js';
+import {
+  getRecipes,
+  getRecipeById,
+  searchRecipesByTitle,
+  searchRecipesByIngredient,
+} from '../controllers/recipe.controller.js';
 import fastifyCookie from 'fastify-cookie';
 
 const RecipeSchema = {
@@ -8,15 +13,14 @@ const RecipeSchema = {
     title: { type: 'string' },
     ingredients: {
       type: 'array',
-      items: { type: 'string' }
+      items: { type: 'string' },
     },
     preparationSteps: {
       type: 'array',
-      items: { type: 'string' }
-    }
+      items: { type: 'string' },
+    },
   },
-}
-
+};
 
 const getRecipesOpts = {
   schema: {
@@ -32,12 +36,12 @@ const getRecipesOpts = {
     querystring: {
       type: 'object',
       properties: {
-        db: { type: 'string', enum: ['mongo', 'sql'] }
-      }
-    }
+        db: { type: 'string', enum: ['mongo', 'sql'] },
+      },
+    },
   },
   handler: getRecipes,
-}
+};
 
 const getRecipeByIdOpts = {
   schema: {
@@ -47,7 +51,7 @@ const getRecipeByIdOpts = {
       properties: {
         id: { type: 'string' },
       },
-      required: ['id']
+      required: ['id'],
     },
     response: {
       200: RecipeSchema,
@@ -61,9 +65,9 @@ const getRecipeByIdOpts = {
     querystring: {
       type: 'object',
       properties: {
-        db: { type: 'string', enum: ['mongo', 'sql'] }
-      }
-    }
+        db: { type: 'string', enum: ['mongo', 'sql'] },
+      },
+    },
   },
   handler: getRecipeById,
 };
@@ -75,9 +79,9 @@ const searchRecipesByTitleOpts = {
       type: 'object',
       properties: {
         name: { type: 'string' },
-        db: { type: 'string', enum: ['mongo', 'sql'] }
+        db: { type: 'string', enum: ['mongo', 'sql'] },
       },
-      required: ['name']
+      required: ['name'],
     },
     response: {
       200: {
@@ -98,9 +102,9 @@ const searchRecipesByIngredientOpts = {
       type: 'object',
       properties: {
         ingredient: { type: 'string' },
-        db: { type: 'string', enum: ['mongo', 'sql'] }
+        db: { type: 'string', enum: ['mongo', 'sql'] },
       },
-      required: ['ingredient']
+      required: ['ingredient'],
     },
     response: {
       200: {
@@ -120,7 +124,7 @@ function recipeRoutes(fastify, options, done) {
   fastify.get('/recipes/:id', getRecipeByIdOpts);
   fastify.get('/recipes/searchByTitle', searchRecipesByTitleOpts);
   fastify.get('/recipes/searchByIngredient', searchRecipesByIngredientOpts);
-  done()
+  done();
 }
 
 export default recipeRoutes;

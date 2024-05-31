@@ -1,6 +1,5 @@
 import Recipe from '../models/recipe.model.js';
 
-
 async function getRecipes(req, reply, fastify) {
   const dbToken = req.query.db;
 
@@ -58,7 +57,9 @@ async function searchRecipesByIngredient(req, reply) {
   } else {
     try {
       const { ingredient } = req.query;
-      const recipes = await Recipe.find({ ingredients: { $regex: ingredient, $options: 'i' } }).exec();
+      const recipes = await Recipe.find({
+        ingredients: { $regex: ingredient, $options: 'i' },
+      }).exec();
       reply.send({ recipes });
     } catch (error) {
       reply.status(500).send({ error: 'An error occurred while searching for recipes.' });
@@ -66,5 +67,4 @@ async function searchRecipesByIngredient(req, reply) {
   }
 }
 
-
-export {getRecipes, getRecipeById, searchRecipesByTitle, searchRecipesByIngredient};
+export { getRecipes, getRecipeById, searchRecipesByTitle, searchRecipesByIngredient };
