@@ -5,7 +5,7 @@ import Recipe from '../models/recipe.model.js';
 import { createClient } from '@supabase/supabase-js';
 
 async function scrapeUrl(req, reply) {
-  const url = 'https://www.allrecipes.com/recipes/17561/lunch/';
+  const url = req.query.url || 'https://www.allrecipes.com/recipes/17561/lunch/';
   try {
     const response = await fetch(url);
     const body = await response.text();
