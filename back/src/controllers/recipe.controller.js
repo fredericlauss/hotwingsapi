@@ -125,7 +125,53 @@ async function searchRecipesByTitle(req, reply) {
   const dbToken = req.query.db;
 
   if (dbToken === 'sql') {
-    reply.send({ message: 'Using SQL database. Implement SQL database logic here.' });
+    const supabase = createClient(process.env.SUPABASEURL, process.env.SUPABASEKEY);
+    const { name } = req.query;
+
+    try {
+      // Fetch recipes by title with case-insensitive search
+      const { data: recipes, error: recipesError } = await supabase
+        .from('recipes')
+        .select('*')
+        .ilike('title', `%${name}%`);
+
+      if (recipesError) throw recipesError;
+
+      // Fetch all ingredients
+      const { data: ingredients, error: ingredientsError } = await supabase
+        .from('ingredients')
+        .select('*');
+      if (ingredientsError) throw ingredientsError;
+
+      // Fetch all preparation steps
+      const { data: preparationSteps, error: preparationStepsError } = await supabase
+        .from('reparation_steps')
+        .select('*');
+      if (preparationStepsError) throw preparationStepsError;
+
+      // Combine recipes with their ingredients and preparation steps
+      const combinedRecipes = recipes.map((recipe) => {
+        const recipeIngredients = ingredients
+          .filter((ingredient) => ingredient.recipe_id === recipe.id)
+          .map((ingredient) => ingredient.name);
+
+        const recipePreparationSteps = preparationSteps
+          .filter((step) => step.recipe_id === recipe.id)
+          .sort((a, b) => a.step_number - b.step_number)
+          .map((step) => step.description);
+
+        return {
+          ...recipe,
+          ingredients: recipeIngredients,
+          preparationSteps: recipePreparationSteps,
+        };
+      });
+
+      reply.send({ recipes: combinedRecipes });
+    } catch (error) {
+      console.error('An error occurred while searching for recipes:', error);
+      reply.status(500).send({ error: 'An error occurred while searching for recipes.' });
+    }
   } else {
     try {
       const { name } = req.query;
