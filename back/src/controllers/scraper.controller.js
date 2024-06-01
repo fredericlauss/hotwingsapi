@@ -95,6 +95,22 @@ async function populate(req, reply) {
   }
 }
 
+async function clearMongoDB(req, reply) {
+  try {
+    await Recipe.deleteMany();
+    reply.send({ message: 'Base de données MongoDB vidée avec succès !' });
+  } catch (error) {
+    console.error(
+      'Erreur lors de la suppression des documents de la base de données MongoDB :',
+      error
+    );
+    reply.status(500).send({
+      error:
+        'Une erreur est survenue lors de la suppression des documents de la base de données MongoDB',
+    });
+  }
+}
+
 async function populateSupabase(req, reply) {
   const supabase = createClient(process.env.SUPABASEURL, process.env.SUPABASEKEY);
 
@@ -168,4 +184,4 @@ async function populateSupabase(req, reply) {
   }
 }
 
-export { scrapeUrl, read, populate, populateSupabase };
+export { scrapeUrl, read, populate, populateSupabase, clearMongoDB };

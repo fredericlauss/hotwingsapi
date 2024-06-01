@@ -1,4 +1,10 @@
-import { scrapeUrl, read, populate, populateSupabase } from '../controllers/scraper.controller.js';
+import {
+  scrapeUrl,
+  read,
+  populate,
+  populateSupabase,
+  clearMongoDB,
+} from '../controllers/scraper.controller.js';
 
 const scrapeUrlOpts = {
   schema: {
@@ -47,9 +53,6 @@ const readOpts = {
 const populateOpts = {
   schema: {
     tags: ['Data'],
-    querystring: {
-      url: { type: 'string' },
-    },
     response: {
       200: {
         type: 'object',
@@ -62,12 +65,24 @@ const populateOpts = {
   handler: populate,
 };
 
+const clearMongoDBOpts = {
+  schema: {
+    tags: ['Data'],
+    response: {
+      200: {
+        type: 'object',
+        properties: {
+          message: { type: 'string' },
+        },
+      },
+    },
+  },
+  handler: clearMongoDB,
+};
+
 const populateSupabaseOpts = {
   schema: {
     tags: ['Data'],
-    querystring: {
-      url: { type: 'string' },
-    },
     response: {
       200: {
         type: 'object',
@@ -85,6 +100,7 @@ function scrapeRoutes(fastify, options, done) {
   fastify.get('/scrape', scrapeUrlOpts);
   fastify.get('/readjson', readOpts);
   fastify.get('/populatemongodb', populateOpts);
+  fastify.get('/clearmongodb', clearMongoDBOpts);
   fastify.get('/populatesupabase', populateSupabaseOpts);
   done();
 }
