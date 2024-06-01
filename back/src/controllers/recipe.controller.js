@@ -187,7 +187,73 @@ async function searchRecipesByIngredient(req, reply) {
   const dbToken = req.query.db;
 
   if (dbToken === 'sql') {
-    reply.send({ message: 'Using SQL database. Implement SQL database logic here.' });
+    const supabase = createClient(process.env.SUPABASEURL, process.env.SUPABASEKEY);
+    const { ingredient } = req.query;
+
+    try {
+      // Fetch ingredient entries that match the search term
+      const { data: matchingIngredients, error: ingredientsError } = await supabase
+        .from('ingredients')
+        .select('*')
+        .ilike('name', `%${ingredient}%`);
+
+      if (ingredientsError) throw ingredientsError;
+
+      // Extract unique recipe IDs from the matching ingredients
+      const recipeIds = [...new Set(matchingIngredients.map((ingredient) => ingredient.recipe_id))];
+
+      if (recipeIds.length === 0) {
+        reply.send({ recipes: [] });
+        return;
+      }
+
+      // Fetch the recipes with the matching recipe IDs
+      const { data: recipes, error: recipesError } = await supabase
+        .from('recipes')
+        .select('*')
+        .in('id', recipeIds);
+
+      if (recipesError) throw recipesError;
+
+      // Fetch all ingredients for the matching recipes
+      const { data: allIngredients, error: allIngredientsError } = await supabase
+        .from('ingredients')
+        .select('*')
+        .in('recipe_id', recipeIds);
+
+      if (allIngredientsError) throw allIngredientsError;
+
+      // Fetch all preparation steps
+      const { data: preparationSteps, error: preparationStepsError } = await supabase
+        .from('reparation_steps')
+        .select('*')
+        .in('recipe_id', recipeIds);
+
+      if (preparationStepsError) throw preparationStepsError;
+
+      // Combine recipes with their ingredients and preparation steps
+      const combinedRecipes = recipes.map((recipe) => {
+        const recipeIngredients = allIngredients
+          .filter((ingredient) => ingredient.recipe_id === recipe.id)
+          .map((ingredient) => ingredient.name);
+
+        const recipePreparationSteps = preparationSteps
+          .filter((step) => step.recipe_id === recipe.id)
+          .sort((a, b) => a.step_number - b.step_number)
+          .map((step) => step.description);
+
+        return {
+          ...recipe,
+          ingredients: recipeIngredients,
+          preparationSteps: recipePreparationSteps,
+        };
+      });
+
+      reply.send({ recipes: combinedRecipes });
+    } catch (error) {
+      console.error('An error occurred while searching for recipes by ingredient:', error);
+      reply.status(500).send({ error: 'An error occurred while searching for recipes.' });
+    }
   } else {
     try {
       const { ingredient } = req.query;
